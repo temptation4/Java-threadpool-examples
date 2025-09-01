@@ -1,131 +1,96 @@
-# Java ThreadPool Examples
+# Java ThreadPool Examples (Java 19)
 
-This repository contains examples of using **Thread Pools** in Java with the `ExecutorService` framework.
+This repository demonstrates **different types of thread pools** in Java using the **Executor Framework**, along with examples of creating **custom thread pools**.
 
----
-
-## 📌 Introduction
-
-In Java, a **Thread Pool** is a pool (collection) of pre-initialized worker threads that are ready to perform tasks.  
-Instead of creating a new thread every time a task is submitted, tasks are queued and executed by one of the existing threads.
-
-This improves performance by:
-
-- Reducing overhead of thread creation/destruction.  
-- Managing concurrency efficiently.  
-- Allowing reuse of threads.  
-
-Thread pools in Java are managed by the **Executor Framework** (introduced in Java 5).
+## 📌 Prerequisites
+- Java 19+
+- Maven/Gradle or simple JDK compilation
 
 ---
 
-## ⚙️ How Thread Pool Works
-1. A task (`Runnable` or `Callable`) is submitted to the Executor.  
-2. The Executor picks an available thread from the pool.  
-3. If no thread is available, the task waits in a queue.  
-4. Once a thread completes a task, it becomes available for the next one.  
+## 🔹 Types of Thread Pools in Java
 
----
+Java provides factory methods in the `Executors` utility class to create different kinds of thread pools.
 
-## 🛠️ Built-in ThreadPool Types (via `Executors` class)
+### 1. Fixed Thread Pool
+A pool with a fixed number of threads.  
+- Best for CPU-bound tasks where the number of worker threads is controlled.
 
-### 1. `newFixedThreadPool(int n)`
-- Creates a pool with a fixed number of threads.  
-- Useful when the number of threads is known and constant.  
 ```java
-ExecutorService fixedPool = Executors.newFixedThreadPool(5);
-2. newCachedThreadPool()
-Creates a pool with threads created on demand.
+ExecutorService executor = Executors.newFixedThreadPool(4);
+2. Cached Thread Pool
+A pool that creates new threads as needed, but reuses previously created threads when available.
 
-Idle threads are reused, but terminated if unused for 60 seconds.
-
-Suitable for short-lived asynchronous tasks.
+Best for short-lived asynchronous tasks.
 
 java
 Copy code
-ExecutorService cachedPool = Executors.newCachedThreadPool();
-3. newSingleThreadExecutor()
-A single worker thread executes tasks sequentially.
+ExecutorService executor = Executors.newCachedThreadPool();
+3. Single Thread Executor
+Executes tasks sequentially on a single worker thread.
 
-Ensures tasks are executed one by one in order.
-
-java
-Copy code
-ExecutorService singleThread = Executors.newSingleThreadExecutor();
-4. newScheduledThreadPool(int n)
-Used for scheduling tasks with delays or periodically.
+Best when tasks must not run in parallel (e.g., logging).
 
 java
 Copy code
-ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
-scheduler.schedule(() -> System.out.println("Task after 5 sec"), 5, TimeUnit.SECONDS);
-🏗️ Creating a Custom Thread Pool
-Java provides ThreadPoolExecutor for fine-grained control.
+ExecutorService executor = Executors.newSingleThreadExecutor();
+4. Scheduled Thread Pool
+Executes tasks after a delay or periodically.
 
-Example: Custom ThreadPool
+Best for scheduled jobs (e.g., background tasks, monitoring).
+
 java
 Copy code
-import java.util.concurrent.*;
+ScheduledExecutorService executor = Executors.newScheduledThreadPool(2);
+executor.schedule(() -> {
+    System.out.println("Task executed after delay");
+}, 5, TimeUnit.SECONDS);
+5. Work-Stealing Pool (Java 8+)
+Uses a ForkJoinPool under the hood.
 
-public class CustomThreadPoolExample {
-    public static void main(String[] args) {
-        ThreadPoolExecutor executor = new ThreadPoolExecutor(
-                2,                     // corePoolSize
-                4,                     // maximumPoolSize
-                10, TimeUnit.SECONDS,  // keepAliveTime
-                new ArrayBlockingQueue<>(2), // task queue
-                Executors.defaultThreadFactory(),
-                new ThreadPoolExecutor.CallerRunsPolicy() // Rejection policy
-        );
+Good for parallelism and dividing tasks into subtasks.
 
-        for (int i = 1; i <= 6; i++) {
-            final int taskId = i;
-            executor.submit(() -> {
-                System.out.println("Executing Task " + taskId + " by " + Thread.currentThread().getName());
-                try { Thread.sleep(2000); } catch (InterruptedException ignored) {}
-            });
-        }
+java
+Copy code
+ExecutorService executor = Executors.newWorkStealingPool();
+🔹 Custom ThreadPoolExecutor
+Sometimes, factory methods are not enough, and you need more control (core threads, queue size, rejection policy, etc.).
 
-        executor.shutdown();
-    }
-}
-🔍 Explanation of Parameters:
-corePoolSize (2): Minimum number of threads kept alive.
+java
+Copy code
+ExecutorService executor = new ThreadPoolExecutor(
+        2,                         // core pool size
+        4,                         // maximum pool size
+        60, TimeUnit.SECONDS,      // idle thread keep-alive time
+        new LinkedBlockingQueue<>(100), // task queue
+        Executors.defaultThreadFactory(), 
+        new ThreadPoolExecutor.AbortPolicy() // rejection handler
+);
+📌 Custom Policies
+AbortPolicy → throws RejectedExecutionException
 
-maximumPoolSize (4): Maximum threads allowed.
+CallerRunsPolicy → runs the task in the caller thread
 
-keepAliveTime (10s): Extra threads (beyond core) live only for this duration when idle.
+DiscardPolicy → silently discards the task
 
-workQueue (ArrayBlockingQueue): Queue that holds tasks before execution.
+DiscardOldestPolicy → discards the oldest task in the queue
 
-ThreadFactory: Defines how new threads are created.
+🚀 Running the Examples
+Clone this repo:
 
-RejectionPolicy: What happens when the queue is full.
+bash
+Copy code
+git clone git@github.com:Temptation4/Java-threadpool-examples.git
+cd Java-threadpool-examples
+Compile and run:
 
-🚦 Rejection Policies in ThreadPoolExecutor
-When the task queue is full and no threads are available, the rejection policy decides what happens:
+bash
+Copy code
+javac -source 19 -target 19 src/*.java
+java Main
+📖 References
+Java ExecutorService Documentation
 
-AbortPolicy (default): Throws RejectedExecutionException.
+ThreadPoolExecutor Javadoc
 
-CallerRunsPolicy: Executes task in the caller’s thread.
-
-DiscardPolicy: Silently discards the task.
-
-DiscardOldestPolicy: Discards the oldest unhandled task.
-
-✅ Real-World Use Cases
-Handling web server requests (Tomcat, Jetty).
-
-Processing messages from Kafka / RabbitMQ.
-
-Asynchronous background tasks (emails, notifications).
-
-Parallel batch processing (ETL, analytics).
-
-🚀 Getting Started
-Requirements
-Java 19
-
-
-✨ Author
- Neelu Sahai
+👨‍💻 Author: Neelu Sahai
