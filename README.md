@@ -1,106 +1,88 @@
-Java Thread Pools
+# Java ThreadPool Examples (Java 19)
 
-Thread pools in Java are part of the Executor Framework (introduced in Java 5). They provide a way to manage a pool of worker threads, reducing the overhead of thread creation and improving performance in concurrent applications.
+This repository demonstrates different types of **Thread Pools** in Java using the **Executor Framework**.  
+Thread pools are used to manage a pool of worker threads to efficiently execute multiple tasks concurrently.
 
-📌 Built-in Thread Pools (via Executors)
-1. FixedThreadPool
+---
 
-A pool with a fixed number of threads.
+## 🔹 Types of Thread Pools
 
-If all threads are busy, new tasks wait in a queue.
+### 1. **FixedThreadPool**
+- A thread pool with a fixed number of threads.
+- If all threads are busy, new tasks wait in the queue.
 
-ExecutorService fixedPool = Executors.newFixedThreadPool(4);
-
-
-✅ Use case: When you know the exact number of threads needed (e.g., handling a set of parallel tasks).
-
+```
+ExecutorService fixedPool = Executors.newFixedThreadPool(5);
 2. CachedThreadPool
+Creates new threads as needed, but reuses previously created threads when available.
 
-Creates new threads as needed, reuses previously constructed ones when available.
+Suitable for many short-lived asynchronous tasks.
 
-Idle threads are terminated after 60 seconds.
 
 ExecutorService cachedPool = Executors.newCachedThreadPool();
-
-
-✅ Use case: Many short-lived asynchronous tasks.
-
 3. SingleThreadExecutor
+A single worker thread that executes tasks sequentially.
 
-Executes tasks sequentially on a single worker thread.
+Ensures tasks are executed in the order they are submitted.
 
-Guarantees FIFO task order.
 
 ExecutorService singleThread = Executors.newSingleThreadExecutor();
-
-
-✅ Use case: When tasks must be executed in order (logging, file writing).
-
 4. ScheduledThreadPool
-
-Executes tasks after a delay or periodically.
+Supports delayed and periodic task execution.
 
 ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
-
 scheduler.schedule(() -> {
-    System.out.println("Task executed after 2 seconds");
-}, 2, TimeUnit.SECONDS);
-
-scheduler.scheduleAtFixedRate(() -> {
-    System.out.println("Task executed every 5 seconds");
-}, 1, 5, TimeUnit.SECONDS);
-
-
-✅ Use case: Timers, periodic jobs, background tasks.
-
+    System.out.println("Task executed after delay");
+}, 3, TimeUnit.SECONDS);
 5. WorkStealingPool (Java 8+)
-
 Uses ForkJoinPool internally.
 
-Creates threads equal to the number of available processors.
-
-Efficient for divide-and-conquer parallelism.
-
-ExecutorService workStealing = Executors.newWorkStealingPool();
+Automatically balances tasks across worker threads.
 
 
-✅ Use case: Parallel stream processing, recursive tasks.
+ExecutorService workStealingPool = Executors.newWorkStealingPool();
+6. Custom ThreadPoolExecutor
+Full control over:
 
-⚙️ Custom Thread Pool (via ThreadPoolExecutor)
+Core pool size
 
-Java provides flexibility to create your own thread pool with fine-grained control.
+Maximum pool size
 
+Keep-alive time
+
+Work queue
+
+Rejection policies
+
+java
+Copy code
 ExecutorService customPool = new ThreadPoolExecutor(
-        2,                 // core pool size
-        4,                 // maximum pool size
-        30, TimeUnit.SECONDS, // idle thread keep-alive time
-        new ArrayBlockingQueue<>(10), // task queue
-        Executors.defaultThreadFactory(), // thread factory
-        new ThreadPoolExecutor.CallerRunsPolicy() // rejection handler
+    2,                   // Core pool size
+    5,                   // Max pool size
+    10, TimeUnit.SECONDS, // Keep alive time
+    new LinkedBlockingQueue<>(100), // Work queue
+    Executors.defaultThreadFactory(),
+    new ThreadPoolExecutor.AbortPolicy() // Rejection policy
 );
 
-Parameters Explained:
 
-Core Pool Size → Minimum number of threads always alive.
 
-Maximum Pool Size → Maximum number of threads.
+📝 Requirements
+Java 19
 
-Keep Alive Time → Time to keep extra threads alive when idle.
+Any IDE (IntelliJ / Eclipse) or terminal to run.
 
-Work Queue → Where tasks wait if all threads are busy.
+📌 Key Points
+Use FixedThreadPool for known, fixed workloads.
 
-Thread Factory → Defines how new threads are created.
+Use CachedThreadPool for many short-lived async tasks.
 
-Rejection Policy → Action when the queue is full:
+Use SingleThreadExecutor when task order matters.
 
-AbortPolicy (default) → throws RejectedExecutionException
+Use ScheduledThreadPool for periodic jobs.
 
-CallerRunsPolicy → runs task in the caller’s thread
+Use WorkStealingPool for parallel tasks.
 
-DiscardPolicy → silently drops task
-
-DiscardOldestPolicy → drops oldest unhandled task
-
-✅ Use case: When you need full control over concurrency (e.g., high-performance servers, background workers).
+Use Custom ThreadPoolExecutor when fine-grained control is needed.
 
 👨‍💻 Author: Neelu Sahai
