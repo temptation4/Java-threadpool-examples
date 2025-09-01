@@ -1,17 +1,4 @@
-# Java ThreadPool Examples (Java 19)
 
-This repository demonstrates different types of **Thread Pools** in Java using the **Executor Framework**.  
-Thread pools are used to manage a pool of worker threads to efficiently execute multiple tasks concurrently.
-
----
-
-## 🔹 Types of Thread Pools
-
-### 1. **FixedThreadPool**
-- A thread pool with a fixed number of threads.
-- If all threads are busy, new tasks wait in the queue.
-
-```
 ExecutorService fixedPool = Executors.newFixedThreadPool(5);
 2. CachedThreadPool
 Creates new threads as needed, but reuses previously created threads when available.
