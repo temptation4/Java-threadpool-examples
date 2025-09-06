@@ -1,4 +1,4 @@
-A ThreadPool is a collection of worker threads that are reused to execute multiple tasks. Instead of creating a new thread for every task (which is costly in terms of CPU and memory), a thread pool improves performance by reusing threads.
+A ThreadPool is a collection of worker threads that are reused to execute multiple tasks. Instead of creating a new thread for every task (which is costly in terms of CPU and memory), a thread pool improves performance by reusing threads. 
 
 Java provides thread pools via the Executor Framework (java.util.concurrent.Executors and ThreadPoolExecutor).
 
