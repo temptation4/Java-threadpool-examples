@@ -4,7 +4,7 @@ Java provides thread pools via the Executor Framework (java.util.concurrent.Exec
 
 **1. Fixed Thread Pool**
 
-A thread pool with a fixed number of threads. 
+A thread pool with a fixed number of threads.  
 
 If all threads are busy, new tasks wait in a queue until a thread becomes available.
 
